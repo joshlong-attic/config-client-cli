@@ -1,0 +1,62 @@
+
+name: Create Release
+
+on:
+  push:
+#     branches: [ main ]
+    tags: 
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+#   pull_request:
+#     branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+
+    - uses: ayltai/setup-graalvm@v1
+      with:
+        java-version: 11
+        graalvm-version: 20.2.0
+        native-image: true
+
+    - run: java -version
+
+    - run: native-image --version
+      
+#     - run: echo "Hello, world" > out.txt && tar -c out.txt | gzip -9 > $GITHUB_WORKSPACE/out.tgz
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./pom.xml
+        asset_name: pom.xml
+        asset_content_type: application/xml
+
+
+
+
+#     - name: Build with Maven
+#       run: mvn -Pnative -DskipTests=true clean package
+
+
