@@ -17,19 +17,15 @@ jobs:
     steps:
 
     - uses: actions/checkout@v2
-
-
     - uses: ayltai/setup-graalvm@v1
       with:
         java-version: 11
         graalvm-version: 20.2.0
         native-image: true
 
-    - run: java -version
+    - run: java -version && native-image --version 
 
-    - run: native-image --version
-
-    - run: mvn -Pnative -DskipTests=true clean package      
+    - run: mvn -Pnative -DskipTests=true clean package
      
     - name: Create Release
       id: create_release
