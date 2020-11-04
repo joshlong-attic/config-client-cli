@@ -19,7 +19,11 @@ jobs:
 
     steps:
 
+      - name: Get the tag version
+        run: echo "TAG_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v2
+
       - uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
@@ -74,5 +78,5 @@ jobs:
           gcloud config set project $GCLOUD_PROJECT
 
       - run: |
-          $GITHUB_WORKSPACE/deploy/build_docker.sh
+          $GITHUB_WORKSPACE/deploy/build_docker.sh $TAG_VERSION
 

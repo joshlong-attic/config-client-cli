@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 APP_NAME=config-client
-
+#TAG_VERSION=${TAG_VERSION:-latest}
 
 
 #GITHUB_ENV=/config/gacc.ini
@@ -15,12 +15,12 @@ APP_NAME=config-client
 
 
 docker build -t $APP_NAME .
-
 image_id=$(docker images -q $APP_NAME)
-
 docker tag "${image_id}" gcr.io/${GCLOUD_PROJECT}/${APP_NAME}:latest
-docker tag "${image_id}" gcr.io/${GCLOUD_PROJECT}/${APP_NAME}:${GITHUB_SHA}
-
 docker push gcr.io/${GCLOUD_PROJECT}/${APP_NAME}:latest
-docker push gcr.io/${GCLOUD_PROJECT}/${APP_NAME}:${GITHUB_SHA}
 
+if [[ -n "${TAG_VERSION}"  ]] ;
+then
+    docker tag "${image_id}" gcr.io/${GCLOUD_PROJECT}/${APP_NAME}:${TAG_VERSION}
+    docker push gcr.io/${GCLOUD_PROJECT}/${APP_NAME}:${TAG_VERSION}
+fi
