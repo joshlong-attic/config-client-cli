@@ -28,6 +28,13 @@ jobs:
 
       - run: java -version && native-image --version
 
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2
+          restore-keys: ${{ runner.os }}-m2
+
       - run: |
           mvn -Pnative -DskipTests=true clean package && chmod a+x target/config-client
 
@@ -65,4 +72,7 @@ jobs:
       - run: |
           gcloud --quiet auth configure-docker
           gcloud config set project $GCLOUD_PROJECT
+
+      - run: |
+          $GITHUB_WORKSPACE/deploy/build_docker.sh
 
