@@ -1,10 +1,13 @@
-
 name: Release It!
+
+env:
+  GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
+  GCLOUD_SA_KEY: ${{ secrets.GCLOUD_SA_KEY }}
 
 on:
   push:
-#     branches: [ main ]
-    tags: 
+    #     branches: [ main ]
+    tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 #   pull_request:
 #     branches: [ main ]
@@ -16,40 +19,50 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
-    - uses: ayltai/setup-graalvm@v1
-      with:
-        java-version: 11
-        graalvm-version: 20.2.0
-        native-image: true
+      - uses: actions/checkout@v2
+      - uses: ayltai/setup-graalvm@v1
+        with:
+          java-version: 11
+          graalvm-version: 20.2.0
+          native-image: true
 
-    - run: java -version && native-image --version 
+      - run: java -version && native-image --version
 
-    - run: mvn -Pnative -DskipTests=true clean package
-     
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+      - run: |
+          mvn -Pnative -DskipTests=true clean package && chmod a+x target/config-client
 
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: target/config-client
-        asset_name: gacc
-        asset_content_type: application/binary
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
 
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: target/config-client
+          asset_name: gacc
+          asset_content_type: application/binary
 
+      - name: Setup GCP environment
+        uses: GoogleCloudPlatform/github-actions@0.1.2
 
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+          project_id: ${{ secrets.GCLOUD_PROJECT }}
 
+      - run: |
+          gcloud --quiet auth configure-docker
+          gcloud config set project $GCLOUD_PROJECT
 

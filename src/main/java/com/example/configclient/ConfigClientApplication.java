@@ -31,7 +31,7 @@ public class ConfigClientApplication {
 			.run(args);
 	}
 
-	private final String usage = "Usage: gacc <CS_USER> <CS_PW> <APP_NAME> <PROFILE> <OUTPUT_PATH> " ;
+	private final String usage = "Usage: gacc <CS_USER> <CS_PW> <APP_NAME> <PROFILE> <CONFIG_URI> <OUTPUT_PATH> ";
 
 	@Bean
 	CommandLineRunner ready() {
@@ -62,10 +62,15 @@ public class ConfigClientApplication {
 				var results = map.block();
 				var existingContent = new StringBuilder();
 				var file = new File(outputPath);
-				try (var fr = new BufferedReader(new FileReader(file))) {
-					existingContent.append(FileCopyUtils.copyToString(fr));
-					existingContent.append(System.lineSeparator());
+
+				if (file.exists()) {
+					try (var fr = new BufferedReader(new FileReader(file))) {
+						existingContent.append(FileCopyUtils.copyToString(fr));
+						existingContent.append(System.lineSeparator());
+					}
 				}
+
+
 				try (var fw = new BufferedWriter(new FileWriter(file))) {
 					fw.write(existingContent.toString());
 					Objects.requireNonNull(results).forEach((key, value) -> {
@@ -80,7 +85,7 @@ public class ConfigClientApplication {
 				}
 			}
 			catch (Exception ex) {
-				log.error( "There was an issue when trying to use the program!" + System.lineSeparator() + this.usage , ex);
+				log.error("There was an issue when trying to use the program!" + System.lineSeparator() + this.usage, ex);
 			}
 		};
 	}
