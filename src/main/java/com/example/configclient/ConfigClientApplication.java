@@ -74,7 +74,7 @@ public class ConfigClientApplication {
 			.uri(url)//
 			.retrieve() //
 			.bodyToMono(JsonNode.class)//
-			.retryWhen(Retry.backoff(100, Duration.ofSeconds(2)))//
+//			.retryWhen(Retry.backoff(10, Duration.ofSeconds(1)))//
 			.map(body -> {
 				var propertySources = (ArrayNode) body.get("propertySources");
 				var maps = new ArrayList<Map<String, String>>();
