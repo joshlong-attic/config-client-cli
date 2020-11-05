@@ -27,6 +27,9 @@ public class ConfigClientApplication {
 	private final Log log = LogFactory.getLog(getClass());
 
 	public static void main(String[] args) {
+
+		java.security.Security.setProperty("networkaddress.cache.ttl" , "10");
+
 		var context = new SpringApplicationBuilder()
 			.web(WebApplicationType.NONE)
 			.sources(ConfigClientApplication.class)
