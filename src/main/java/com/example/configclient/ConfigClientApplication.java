@@ -50,7 +50,7 @@ public class ConfigClientApplication {
 				.filter(ExchangeFilterFunctions.basicAuthentication(username, pw))
 				.build();
 			var url = configServerUri + '/' + springApplicationName + '/' + profile;
-			var maxTries = 10;
+			var maxTries = 60;
 			var ctr = 0;
 			var continueCalls = true;
 			while (ctr++ < maxTries && continueCalls) {
@@ -60,7 +60,7 @@ public class ConfigClientApplication {
 				}
 				catch (Exception ex) {
 					log.error("There was an issue when trying to use the program!" + System.lineSeparator() + this.usage, ex);
-					Thread.sleep(1_000);
+					Thread.sleep(5_000);
 				}
 			}
 		};
