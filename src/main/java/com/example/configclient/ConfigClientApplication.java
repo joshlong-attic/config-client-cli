@@ -67,7 +67,7 @@ public class ConfigClientApplication {
 	}
 
 	private void attemptCall(int count, String outputPath, WebClient http, String url) throws IOException {
-		log.info("attempt # " + count);
+		log.info("attempt # " + count + " call to " + url + '.');
 		var map = http
 			.get()//
 			.uri(url)//
