@@ -46,33 +46,28 @@ public class ConfigClientApplication {
 			var profile = args[index++];
 			var configServerUri = args[index++];
 			var outputPath = args[index++];
-
-
 			var http = WebClient.builder()
 				.filter(ExchangeFilterFunctions.basicAuthentication(username, pw))
 				.build();
 			var url = configServerUri + '/' + springApplicationName + '/' + profile;
-
-
-			var maxTries = 100;
+			var maxTries = 10;
 			var ctr = 0;
 			var continueCalls = true;
 			while (ctr++ < maxTries && continueCalls) {
 				try {
-
-					this.attemptCall(outputPath, http, url);
+					this.attemptCall(ctr, outputPath, http, url);
 					continueCalls = false;
 				}
 				catch (Exception ex) {
-					log.error("There was an issue when trying to use the program!"
-						+ System.lineSeparator() + this.usage, ex);
-
+					log.error("There was an issue when trying to use the program!" + System.lineSeparator() + this.usage, ex);
+					Thread.sleep(1_000);
 				}
 			}
 		};
 	}
 
-	private void attemptCall(String outputPath, WebClient http, String url) throws IOException {
+	private void attemptCall(int count, String outputPath, WebClient http, String url) throws IOException {
+		log.info("attempt # " + count);
 		var map = http
 			.get()//
 			.uri(url)//
@@ -85,22 +80,18 @@ public class ConfigClientApplication {
 				propertySources.elements().forEachRemaining(json -> maps.add(mapOfConfigurationFrom(json)));
 				Collections.reverse(maps);
 				var toWriteOut = new HashMap<String, String>();
-				maps.stream().forEachOrdered(toWriteOut::putAll);
+				maps.forEach(toWriteOut::putAll);
 				return toWriteOut;
 			});
 		var results = map.block();
-
 		var existingContent = new StringBuilder();
 		var file = new File(outputPath);
-
 		if (file.exists()) {
 			try (var fr = new BufferedReader(new FileReader(file))) {
 				existingContent.append(FileCopyUtils.copyToString(fr));
 				existingContent.append(System.lineSeparator());
 			}
 		}
-
-
 		try (var fw = new BufferedWriter(new FileWriter(file))) {
 			fw.write(existingContent.toString());
 			Objects.requireNonNull(results).forEach((key, value) -> {
